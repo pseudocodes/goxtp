@@ -10,6 +10,7 @@
   //printf("Initialization goxtp done.\n");
 %}
 
+%include "stdint.i"
 %typemap(gotype) (char **ticker, int count) "[]string"
 
 %typemap(in) (char **ticker, int count)
