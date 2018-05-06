@@ -1,0 +1,104 @@
+/* Copyright 2011 The Go Authors.  All rights reserved.
+   Use of this source code is governed by a BSD-style
+   license that can be found in the LICENSE file.  */
+
+/* An example of writing a C++ virtual function in Go.  */
+
+%module(directors="1") goxtp
+
+%init %{ 
+  //printf("Initialization goxtp done.\n");
+%}
+
+%typemap(gotype) (char **ticker, int count) "[]string"
+
+%typemap(in) (char **ticker, int count)
+%{
+  {
+    int i;
+    _gostring_* a;
+
+    $2 = $input.len;
+    a = (_gostring_*) $input.array;
+    $1 = (char **) malloc (($2 + 1) * sizeof (char *));
+    for (i = 0; i < $2; i++) {
+      
+     
+      /*Work well*/
+      _gostring_ *ps = &a[i];
+      $1[i] = (char*) malloc(ps->n + 1);
+      memcpy($1[i], ps->p, ps->n);
+      $1[i][ps->n] = '\0';
+    }
+    $1[i] = NULL;
+  }
+%}
+
+%typemap(argout) (char **ticker, int count) "" /* override char *[] default */
+
+%typemap(freearg) (char **ticker, int count)
+%{
+  {
+    int i;
+    for (i = 0; i < $2; i++)
+    {
+      free ($1[i]);
+    }
+    free($1);
+  }
+%}
+ 
+
+%typemap(gotype) (int64_t *bid1_qty, int32_t bid1_count) "[]int64"
+%typemap(gotype) (int64_t *ask1_qty, int32_t ask1_count) "[]int64"
+
+%typemap(in) (int64_t *bid1_qty, int32_t bid1_count), (int64_t *ask1_qty, int32_t ask1_count)
+%{
+  {
+    int i;
+    int64_t* a;
+
+    $2 = $input.len;
+    a = (int64_t*) $input.array;
+    $1 = a;
+  }
+%}
+
+%typemap(argout) (int64_t *bid1_qty, int32_t bid_count), (int64_t *ask1_qty, int32_t ask1_count) "" /* override char *[] default */
+
+%typemap(freearg) (int64_t *bid1_qty, int32_t bid_count), (int64_t *ask1_qty, int32_t ask1_count)
+%{
+    // do nothing
+%}
+ 
+
+
+/* Includes the header files in the wrapper code */
+%header %{
+
+#include "./api/include/xtp_api_struct_common.h"
+#include "./api/include/xtp_api_struct.h"
+#include "./api/include/xtp_api_data_type.h"
+#include "./api/include/xoms_api_fund_struct.h" 
+#include "./api/include/xoms_api_struct.h"
+#include "./api/include/xquote_api_struct.h"
+#include "./api/include/xtp_quote_api.h"
+#include "./api/include/xtp_trader_api.h"
+
+%}
+
+/* Parse the header files to generate wrappers */
+%include "std_string.i"
+
+%feature("director") XTP::API::QuoteSpi;
+%feature("director") XTP::API::TradeSpi;
+
+%include "./api/include/xtp_api_struct_common.h"
+%include "./api/include/xtp_api_struct.h"
+%include "./api/include/xoms_api_fund_struct.h" 
+%include "./api/include/xoms_api_struct.h"
+%include "./api/include/xquote_api_struct.h"
+%include "./api/include/xtp_api_data_type.h"
+%include "./api/include/xtp_quote_api.h"
+%include "./api/include/xtp_trader_api.h"
+
