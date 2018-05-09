@@ -34,3 +34,7 @@ go get -u -v github.com/pseudocodes/goxtp
 ```
 make example
 ```
+
+## ChangeLog
+
+see [History](https://github.com/pseudocodes/goxtp/blob/master/History.md)
