@@ -5,7 +5,9 @@
 package goxtp
 
 /*
-#cgo linux LDFLAGS: -fPIC -L. -L${SRCDIR}/api/linux -Wl,-rpath=${SRCDIR}/api/linux/  -lxtpquoteapi -lxtptraderapi -lsodium -lstdc++
+#cgo darwin LDFLAGS: -fPIC -L/usr/local/ -L. -L${SRCDIR}/api/macosx/  -Wl,-rpath,${SRCDIR}/api/macosx/ -lxtpquoteapi -lxtptraderapi -lstdc++
+#cgo darwin CPPFLAGS: -fPIC -I. -I/${SRCDIR}/api/include/
+#cgo linux LDFLAGS: -fPIC -L. -L${SRCDIR}/api/linux -Wl,-rpath=${SRCDIR}/api/linux/  -lxtpquoteapi -lxtptraderapi -lstdc++
 #cgo linux CPPFLAGS: -fPIC -I. -I/${SRCDIR}/api/include/
 */
 import "C"

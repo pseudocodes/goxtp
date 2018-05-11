@@ -8,6 +8,7 @@
 
 #include "xtp_api_data_type.h"
 
+#pragma pack(8)
 
 //=====================客户端接口定义=================================
 ///新订单请求
@@ -397,5 +398,6 @@ struct XTPQueryIPOQuotaRsp {
     int32_t             quantity;
 };
 
+#pragma pack()
 #endif //_XOMS_API_STRUCT_H_
 

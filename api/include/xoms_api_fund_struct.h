@@ -10,6 +10,7 @@
 #include "xoms_api_struct.h"
 #include "xtp_api_struct_common.h"
 
+#pragma pack(8)
 
 #define XTP_ACCOUNT_PASSWORD_LEN 64
 
@@ -36,6 +37,6 @@ struct XTPFundTransferReq
 /////////////////////////////////////////////////////////////////////////
 typedef struct XTPFundTransferNotice XTPFundTransferAck ;
 
-
+#pragma pack()
 
 #endif
