@@ -92,7 +92,7 @@
 %include "std_string.i"
 
 %feature("director") XTP::API::QuoteSpi;
-%feature("director") XTP::API::TradeSpi;
+%feature("director") XTP::API::TraderSpi;
 
 %include "./api/include/xtp_api_struct_common.h"
 %include "./api/include/xtp_api_struct.h"

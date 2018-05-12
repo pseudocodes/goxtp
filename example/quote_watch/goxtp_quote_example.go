@@ -8,17 +8,26 @@ import (
 	"github.com/pseudocodes/goxtp"
 )
 
-var (
-	quoteServerHost = flag.String("host", "120.27.164.138", "行情服务器地址")
-	quoteServerPort = flag.Int("port", 6002, "行情服务器端口")
-	quoteUsername   = flag.String("username", "pseudo", "行情服务登录用户名")
-	quotePassword   = flag.String("password", "******", "行情服务登录密码")
-	accountKey      = flag.String("accountkey", "xxxxxxxx", "api key")
-	logPath         = flag.String("logpath", "./test", "相关日志输出路径")
-)
+type QuoteConfig struct {
+	Host       string
+	Port       int
+	Username   string
+	Password   string
+	AccountKey string
+	LogPath    string
+}
+
+var config QuoteConfig
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Llongfile)
+	flag.StringVar(&config.Host, "host", "120.27.164.138", "行情服务器地址")
+	flag.IntVar(&config.Port, "port", 6002, "行情服务器端口")
+	flag.StringVar(&config.Username, "username", "pseudo", "行情服务登录用户名")
+	flag.StringVar(&config.Password, "password", "******", "行情服务登录密码")
+	flag.StringVar(&config.AccountKey, "accountkey", "xxxxxxxx", "api key")
+	flag.StringVar(&config.LogPath, "logpath", "./test", "相关日志输出路径")
+
 	flag.Parse()
 }
 
@@ -26,8 +35,9 @@ type GoXTPClient struct {
 	Host string
 	Port int
 
-	Username string
-	Password string
+	Username   string
+	Password   string
+	AccountKey string
 
 	ClientID int
 	Path     string
@@ -117,25 +127,33 @@ func (p *GoXTPQuoteSpi) OnQueryTickersPriceInfo(tickerInfo goxtp.XTPTPI, errorIn
 }
 
 func main() {
-	fmt.Println("vim-go")
+	fmt.Printf("xtp-go config: %+v\n", config)
 
 	xtp := GoXTPClient{
-		Host:     *quoteServerHost,
-		Port:     *quoteServerPort,
-		Username: *quoteUsername,
-		Password: *quotePassword,
+		Host:       config.Host,
+		Port:       config.Port,
+		Username:   config.Username,
+		Password:   config.Password,
+		AccountKey: config.AccountKey,
 
 		ClientID: 1,
 	}
+	quoteAPI := goxtp.QuoteApiCreateQuoteApi(uint8(xtp.ClientID), config.LogPath)
+	if quoteAPI.Swigcptr() == 0 {
+		fmt.Println("here!")
 
-	quoteAPI := goxtp.QuoteApiCreateQuoteApi(uint8(xtp.ClientID), *logPath)
+	}
+
 	pQuoteSPI := goxtp.NewDirectorQuoteSpi(&GoXTPQuoteSpi{Client: xtp})
+	log.Println("here!")
+	fmt.Println("here!!!!!")
 	quoteAPI.SetHeartBeatInterval(15)
 	quoteAPI.SetUDPBufferSize(128)
 	quoteAPI.RegisterSpi(pQuoteSPI)
+	log.Println("create QuoteApi success")
+	ret := quoteAPI.Login(xtp.Host, xtp.Port, xtp.Username, xtp.Password, goxtp.XTP_PROTOCOL_TCP)
+	log.Printf("login return: %v", ret)
 
-	quoteAPI.Login(xtp.Host, xtp.Port, xtp.Username, xtp.Password, goxtp.XTP_PROTOCOL_UDP)
-
-	select {}
+	// select {}
 
 }
