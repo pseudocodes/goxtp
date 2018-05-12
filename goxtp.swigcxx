@@ -53,19 +53,17 @@
 %typemap(gotype) (int64_t *bid1_qty, int32_t bid1_count) "[]int64"
 %typemap(gotype) (int64_t *ask1_qty, int32_t ask1_count) "[]int64"
 
-%typemap(in) (int64_t *bid1_qty, int32_t bid1_count), (int64_t *ask1_qty, int32_t ask1_count)
+%typemap(in) (int64_t *bid1_qty, int32_t bid1_count), (int64_t *ask1_qty, int32_t ask1_count) ""
+
+%typemap(directorin) (int64_t *bid1_qty, int32_t bid1_count), (int64_t *ask1_qty, int32_t ask1_count)
 %{
   {
-    int i;
-    int64_t* a;
-
-    $2 = $input.len;
-    a = (int64_t*) $input.array;
-    $1 = a;
+    $input.len = $2;
+    $input.array = $1;
   }
 %}
 
-%typemap(argout) (int64_t *bid1_qty, int32_t bid_count), (int64_t *ask1_qty, int32_t ask1_count) "" /* override char *[] default */
+// %typemap(directorout) (int64_t *bid1_qty, int32_t bid_count), (int64_t *ask1_qty, int32_t ask1_count) "/*directorout*/" /* override char *[] default */
 
 %typemap(freearg) (int64_t *bid1_qty, int32_t bid_count), (int64_t *ask1_qty, int32_t ask1_count)
 %{

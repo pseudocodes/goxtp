@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/pseudocodes/goxtp"
 )
@@ -30,6 +31,7 @@ func init() {
 	flag.StringVar(&config.LogPath, "logpath", "./test", "相关日志输出路径")
 
 	flag.Parse()
+
 }
 
 type GoXTPClient struct {
@@ -87,6 +89,8 @@ func (p *GoXTPQuoteSpi) OnDepthMarketData(marketData goxtp.XTPMD, bid1Qty []int6
 	fmt.Printf("last_price: %v\n", marketData.GetLast_price())
 	fmt.Printf("open_price: %v\n", marketData.GetOpen_price())
 	fmt.Printf("pre_close_price: %v\n", marketData.GetPre_close_price())
+	fmt.Printf("bid1Qty %+v len: %v max: %v\n", bid1Qty, len(bid1Qty), maxBid1Count)
+	fmt.Printf("ask1Qty %+v len: %v max: %v\n", ask1Qty, len(ask1Qty), maxAsk1Count)
 
 }
 
@@ -161,6 +165,7 @@ func main() {
 
 		ClientID: 1,
 	}
+	os.MkdirAll(filepath.Join(config.LogPath, "log"), 0777)
 	quoteAPI := goxtp.QuoteApiCreateQuoteApi(uint8(xtp.ClientID), config.LogPath)
 	if quoteAPI.Swigcptr() == 0 {
 		fmt.Println("here!")
@@ -172,6 +177,7 @@ func main() {
 	quoteAPI.SetUDPBufferSize(128)
 	quoteAPI.RegisterSpi(pQuoteSPI)
 	log.Println("create QuoteApi success")
+
 	ret := quoteAPI.Login(xtp.Host, xtp.Port, xtp.Username, xtp.Password, goxtp.XTP_PROTOCOL_TCP)
 	log.Printf("login return: %v", ret)
 	if ret == 0 {
@@ -183,5 +189,4 @@ func main() {
 
 	}
 	select {}
-
 }

@@ -1,5 +1,16 @@
 # History
 
+## 0.0.1 (2018-05-12)
+* OnDepthMarketData 参数修正
+	* 修改 Swig 脚本, 添加 directorin 逻辑，适配传入参数
+
+## 0.0.1 (2018-05-11)
+* 完善 quote_watch 例子
+	* macosx 环境在创建 `QuoteApi` 时会根据传入的 `save_file_path` 创建目录，但是会在 save_file_path 之前加入随机字符，原因不明，之后程序被锁死
+	* macosx c++ 程序不会出现该问题
+	* linux 环境没有该问题
+	* 提前创建好日志目录可以让程序运行下去
+
 ## 0.0.1 (2018-05-10)
 * 测试 20180227.1.1.16.20 版本的 macosx 库
     * 这个版本的 dylib 库是开发人员用 gcc7 编译的，默认的 clang 环境可以编译通过，but 运行时使用的动态库不对
