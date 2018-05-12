@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/pseudocodes/goxtp"
 )
@@ -20,7 +21,7 @@ type QuoteConfig struct {
 var config QuoteConfig
 
 func init() {
-	log.SetFlags(log.LstdFlags | log.Llongfile)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	flag.StringVar(&config.Host, "host", "120.27.164.138", "行情服务器地址")
 	flag.IntVar(&config.Port, "port", 6002, "行情服务器端口")
 	flag.StringVar(&config.Username, "username", "pseudo", "行情服务登录用户名")
@@ -64,14 +65,28 @@ func (p *GoXTPQuoteSpi) OnError(errorInfo goxtp.XTPRI) {
 
 //OnSubMarketData 订阅行情应答
 func (p *GoXTPQuoteSpi) OnSubMarketData(ticker goxtp.XTPST, errorInfo goxtp.XTPRI, isLast bool) {
+	log.Printf("OnRspSubMarketData -----\n")
+	if IsErrorRspInfo(errorInfo) {
+		return
+	}
+	log.Printf("ticker: %v, exchangeid: %v,  isLast %v\n", ticker.GetTicker(), ticker.GetExchange_id(), isLast)
+
 }
 
 //OnUnSubMarketData 退订行情应答
 func (p *GoXTPQuoteSpi) OnUnSubMarketData(ticker goxtp.XTPST, errorInfo goxtp.XTPRI, isLast bool) {
+	if IsErrorRspInfo(errorInfo) {
+		return
+	}
 }
 
 //OnDepthMarketData 深度行情通知，包含买一卖一队列
 func (p *GoXTPQuoteSpi) OnDepthMarketData(marketData goxtp.XTPMD, bid1Qty []int64, maxBid1Count int, ask1Qty []int64, maxAsk1Count int) {
+	log.Printf("OnRspDepthMarketData -----\n")
+	fmt.Printf("contract code: [%v]\n", marketData.GetTicker())
+	fmt.Printf("last_price: %v\n", marketData.GetLast_price())
+	fmt.Printf("open_price: %v\n", marketData.GetOpen_price())
+	fmt.Printf("pre_close_price: %v\n", marketData.GetPre_close_price())
 
 }
 
@@ -126,6 +141,14 @@ func (p *GoXTPQuoteSpi) OnQueryAllTickers(tickerInfo goxtp.XTPQSI, errorInfo gox
 func (p *GoXTPQuoteSpi) OnQueryTickersPriceInfo(tickerInfo goxtp.XTPTPI, errorInfo goxtp.XTPRI, isLast bool) {
 }
 
+func IsErrorRspInfo(pRspInfo goxtp.XTPRI) bool {
+	result := pRspInfo.Swigcptr() != 0 && pRspInfo.GetError_id() != 0
+	if result {
+		log.Printf("ErrorID: %v, ErrorMsg: %v\n", pRspInfo.GetError_id(), pRspInfo.GetError_msg())
+	}
+	return result
+}
+
 func main() {
 	fmt.Printf("xtp-go config: %+v\n", config)
 
@@ -141,19 +164,24 @@ func main() {
 	quoteAPI := goxtp.QuoteApiCreateQuoteApi(uint8(xtp.ClientID), config.LogPath)
 	if quoteAPI.Swigcptr() == 0 {
 		fmt.Println("here!")
-
+		os.Exit(-1)
 	}
 
 	pQuoteSPI := goxtp.NewDirectorQuoteSpi(&GoXTPQuoteSpi{Client: xtp})
-	log.Println("here!")
-	fmt.Println("here!!!!!")
 	quoteAPI.SetHeartBeatInterval(15)
 	quoteAPI.SetUDPBufferSize(128)
 	quoteAPI.RegisterSpi(pQuoteSPI)
 	log.Println("create QuoteApi success")
 	ret := quoteAPI.Login(xtp.Host, xtp.Port, xtp.Username, xtp.Password, goxtp.XTP_PROTOCOL_TCP)
 	log.Printf("login return: %v", ret)
+	if ret == 0 {
+		var instruments = []string{"600020"}
+		quoteAPI.SubscribeMarketData(instruments, goxtp.XTP_EXCHANGE_SH)
+	} else {
+		errInfo := quoteAPI.GetApiLastError()
+		log.Printf("Login to server error: %v:%v\n", errInfo.GetError_id(), errInfo.GetError_msg())
 
-	// select {}
+	}
+	select {}
 
 }
